@@ -122,10 +122,6 @@ export default function HomePage() {
 
   return (
     <div className="space-y-8">
-      <p className="text-xs text-ink-muted">
-        <span className="text-utn-blue font-semibold">Home</span>
-      </p>
-
       <div className="flex flex-col gap-8 xl:flex-row xl:items-start">
         <Sidebar
           departments={allDepartments}
