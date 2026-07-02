@@ -1,21 +1,28 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import profilesApi, {
-  type ProfileInput,
-  publishAvatar,
-} from "../../lib/profiles";
+import { type ProfileInput } from "../../lib/profiles";
 import { useAuth } from "../../context/AuthContext";
 import { Camera } from "lucide-react";
 import { useModal } from "../../lib/modal/modal.provider";
 import CropperModal from "../../components/CropperModal";
+import { useProfile } from "../../context/ProfileContext";
 
 export default function CreateProfilePage() {
   const { user } = useAuth();
+  const { profile, createProfile } = useProfile();
   const { showModal } = useModal();
   const navigate = useNavigate();
 
-  const [avatar, setAvatar] = useState<File | null>(null);
+  const [avatar, setAvatar] = useState<File | undefined>(undefined);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+
+  if (!user) {
+    navigate("/auth/login", { replace: true });
+  }
+
+  if (profile) {
+    navigate("/", { replace: true });
+  }
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -70,10 +77,7 @@ export default function CreateProfilePage() {
     setError(null);
 
     try {
-      await profilesApi.create(form);
-      if (avatar) {
-        await publishAvatar(avatar);
-      }
+      await createProfile(form, avatar);
       navigate("/", { replace: true });
     } catch (err: any) {
       setError(err?.message || "Error al crear el perfil");

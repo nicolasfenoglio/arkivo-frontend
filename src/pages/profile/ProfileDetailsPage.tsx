@@ -92,7 +92,6 @@ export default function ProfilePage() {
             </nav>
           </div>
 
-          {/* Tab content */}
           <div className="flex flex-col gap-3">
             {activeTab === "notes" ? (
               details.notes.length > 0 ? (
@@ -118,11 +117,9 @@ export default function ProfilePage() {
                 <div
                   key={comment.id}
                   className="rounded-lg border border-slate-200 p-4 hover:border-slate-300 transition-colors cursor-pointer"
-                  onClick={() => navigate(`/notes/${comment.note.id}`)}
                 >
                   <p className="text-sm text-ink">{comment.message}</p>
                   <p className="text-xs text-slate-400 mt-1">
-                    en{" "}
                     <span className="font-medium">
                       <NavLink to={`/notes/${comment.note.id}`}>
                         {comment.note.name}
