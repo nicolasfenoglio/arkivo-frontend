@@ -148,7 +148,13 @@ export default function HomePage() {
               <div className="flex overflow-hidden rounded-full border border-border bg-surface-card shadow-sm">
                 <button
                   id="sort-by-rating"
-                  onClick={() => setSortBy("rating")}
+                  onClick={() => {
+                    if (sortBy === "rating") {
+                      setSortBy(null);
+                    } else {
+                      setSortBy("rating");
+                    }
+                  }}
                   className={`px-5 py-2.5 text-sm font-medium transition-colors ${
                     sortBy === "rating"
                       ? "bg-utn-blue text-white"
@@ -159,7 +165,13 @@ export default function HomePage() {
                 </button>
                 <button
                   id="sort-by-visits"
-                  onClick={() => setSortBy("visits")}
+                  onClick={() => {
+                    if (sortBy === "visits") {
+                      setSortBy(null);
+                    } else {
+                      setSortBy("visits");
+                    }
+                  }}
                   className={`border-l border-border px-5 py-2.5 text-sm font-medium transition-colors ${
                     sortBy === "visits"
                       ? "bg-utn-blue text-white"

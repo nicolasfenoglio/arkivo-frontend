@@ -50,6 +50,7 @@ export interface BackendNoteComment {
   message: string;
   author: {
     id: number;
+    avatarKey?: string;
     firstName: string;
     lastName: string;
   };
@@ -76,6 +77,7 @@ export interface BackendNoteDetail extends BackendNote {
     id: number;
     firstName: string;
     lastName: string;
+    avatarKey?: string;
   };
   comments?: BackendNoteComment[];
   resources: {

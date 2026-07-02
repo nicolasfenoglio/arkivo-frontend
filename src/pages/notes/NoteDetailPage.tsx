@@ -54,7 +54,7 @@ export default function NoteDetailPage() {
                 <StarRating rating={note.rating?.average || 0} />
               </span>
             </div>
-            <div className="flex flex-row justify-between items-center w-full">
+            <div className="grid grid-cols-[7fr_3fr] justify-between items-center w-full p-2">
               <div className="flex flex-col">
                 <h2 className="text-xl font-semibold mb-2">Descripción</h2>
                 <p className="mb-4">{note.description}</p>
@@ -63,17 +63,7 @@ export default function NoteDetailPage() {
                   {note.keywords}
                 </p>
               </div>
-              <div className="flex flex-col">
-                <p>
-                  Autor:
-                  {note.author ? (
-                    <NavLink to={`/profile/${note.author.id}`}>
-                      {note.author.firstName} {note.author.lastName}
-                    </NavLink>
-                  ) : (
-                    "Desconocido"
-                  )}
-                </p>
+              <div className="flex flex-col p-2">
                 <p>Materia: {note.subject?.name || "Desconocida"}</p>
                 <p>
                   Carrera: {note.subject.department?.name || "Materias Básicas"}
@@ -82,25 +72,46 @@ export default function NoteDetailPage() {
             </div>
             <CommentsContainer comments={note.comments} noteId={note.id} />
           </div>
-          <div className="flex flex-col w-full px-8">
-            <h1 className="text-xl font-semibold mb-5 self-center">
-              Contenido
-            </h1>
-            {note.resources.map((resource) => (
-              <div key={resource.id} className="mb-4">
-                <h2 className="text-lg font-semibold mb-1">
-                  {resource.fileName}
-                </h2>
-                <a
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-surface p-2 hover:underline hover:cursor-pointer bg-utn-blue rounded-md"
-                  onClick={() => handleDownload(resource.id)}
-                >
-                  Descargar recurso
-                </a>
+          <div className="grid grid-rows-[1fr_1fr] w-full px-8">
+            <div className="flex flex-col gap-4">
+              <h1 className="text-xl font-semibold mb-5 self-center">
+                Contenido
+              </h1>
+              <div className="overflow-scroll h-full">
+                {note.resources.map((resource) => (
+                  <div
+                    key={resource.id}
+                    className="mb-4 p-2 border border-border rounded-md flex flex-col gap-2"
+                  >
+                    <h2 className="text-lg font-semibold mb-1">
+                      {resource.fileName}
+                    </h2>
+                    <a
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-surface p-2 hover:underline hover:cursor-pointer bg-utn-blue rounded-md w-fit"
+                      onClick={() => handleDownload(resource.id)}
+                    >
+                      Descargar
+                    </a>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+            <NavLink
+              className="flex flex-col gap-4 items-center bg-accent/50 p-4 rounded-md h-fit"
+              to={`/profile/${note.author.id}`}
+            >
+              <h1 className="text-xl font-semibold mb-5">Autor</h1>
+              <img
+                className="w-32 h-32 rounded-full mb-4"
+                src={`http://localhost:9000/public/${note.author.avatarKey}`}
+                alt={`Avatar de ${note.author.firstName} ${note.author.lastName}`}
+              />
+              <h2 className="text-lg font-semibold">
+                {note.author.firstName} {note.author.lastName}
+              </h2>
+            </NavLink>
           </div>
         </>
       ) : (
@@ -122,10 +133,13 @@ function AddCommentModal({
   setNewComment: (comment: BackendNoteComment | null) => void;
 }) {
   const { profile } = useProfile();
-  const [rating, setRating] = useState(0);
+  const [rating, setRating] = useState(1);
   const [comment, setComment] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
+    if (rating < 1 || rating > 5) {
+      return;
+    }
     e.preventDefault();
     try {
       http.post<{ id: number }>(`notes/${noteId}/comment`, {
@@ -137,7 +151,12 @@ function AddCommentModal({
         message: comment,
         createdAt: new Date().toISOString(),
         id: -1,
-        author: { ...profile! },
+        author: {
+          ...profile!,
+          avatarKey:
+            profile?.avatar.replace("http://localhost:9000/public", "") ??
+            "default.webp",
+        },
       });
     } catch (error) {
       setNewComment(null);
@@ -189,7 +208,7 @@ function CommentsContainer({
   };
 
   return (
-    <div className="flex flex-col w-full py-3">
+    <div className="flex flex-col w-full py-3 mt-5">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold mb-2">Comentarios</h2>
         <button
@@ -201,19 +220,34 @@ function CommentsContainer({
       </div>
       {displayedComments && displayedComments.length > 0 ? (
         displayedComments.map((comment) => (
-          <div key={comment.id} className="py-2 mt-1">
-            <span className="flex items-center justify-between gap-2">
-              <p className="font-semibold text-xl">
-                <NavLink to={`/profile/${comment.author.id}`}>
-                  {comment.author.firstName} {comment.author.lastName}
-                </NavLink>
-                <span className="text-sm font-light text-gray-500 ml-2">
-                  {formatRelativeDate(new Date(comment.createdAt))}
-                </span>
-              </p>
-              <StarRating rating={comment.valoration} />
-            </span>
-            <p>{comment.message}</p>
+          <div
+            key={`comment-${comment.id}-${comment.createdAt}`}
+            className="py-2 mt-6 shadow-sm px-2 rounded-md border border-border flex gap-4 items-center justify-start"
+          >
+            <NavLink to={`/profile/${comment.author.id}`}>
+              <img
+                src={`http://localhost:9000/public/${comment.author.avatarKey ?? "default.webp"}`}
+                alt={`Avatar de ${comment.author.firstName} ${comment.author.lastName}`}
+                className="w-12 h-12 rounded-full hover:scale-105 transition-transform"
+              />
+            </NavLink>
+            <div className="flex w-full flex-col gap-1">
+              <span className="flex w-full items-center justify-between gap-2">
+                <p className="font-semibold text-xl">
+                  <NavLink
+                    to={`/profile/${comment.author.id}`}
+                    className="hover:underline"
+                  >
+                    {comment.author.firstName} {comment.author.lastName}
+                  </NavLink>
+                  <span className="text-sm font-light text-gray-500 ml-2">
+                    {formatRelativeDate(new Date(comment.createdAt))}
+                  </span>
+                </p>
+                <StarRating rating={comment.valoration} />
+              </span>
+              <p>{comment.message}</p>
+            </div>
           </div>
         ))
       ) : (
